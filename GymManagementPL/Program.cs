@@ -1,4 +1,6 @@
 using GymManagementDAL.Data.Contexts;
+using GymManagementDAL.Repositories.Classes;
+using GymManagementDAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementPL
@@ -18,6 +20,8 @@ namespace GymManagementPL
             });
 
             var app = builder.Build();
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
