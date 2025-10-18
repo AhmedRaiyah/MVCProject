@@ -2,9 +2,9 @@
 using GymManagementBLL.Services.Interfaces;
 using GymManagementBLL.ViewModels.MemberViewModels;
 using GymManagementBLL.ViewModels.SessionViewModels;
-using GymManagementBLL.ViewModels.SesssionViewModels;
 using GymManagementDAL.Entities;
 using GymManagementDAL.Repositories.Interfaces;
+using GymManagementSystemBLL.ViewModels.SessionViewModels;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace GymManagementBLL.Services.Classes
             
             return _unitOfWork.SaveChanges() > 0;
         }
-
+      
         public IEnumerable<SessionViewModel> GetAllSessions()
         {
             var sessions = _unitOfWork.SessionRepository
@@ -54,7 +54,7 @@ namespace GymManagementBLL.Services.Classes
 
             var mappedSessions = _mapper.Map<IEnumerable<Session>, IEnumerable<SessionViewModel>>(sessions);
 
-            foreach(var session in mappedSessions)
+            foreach (var session in mappedSessions)
             {
                 session.AvailableSlots = session.Capacity - _unitOfWork.SessionRepository.GetCountOfBookedSlots(session.Id);
             }
@@ -71,9 +71,9 @@ namespace GymManagementBLL.Services.Classes
 
             var mappedSessions = _mapper.Map<Session, SessionViewModel>(session);
 
-            
+
             mappedSessions.AvailableSlots = session.Capacity - _unitOfWork.SessionRepository.GetCountOfBookedSlots(session.Id);
-            
+
 
             return mappedSessions;
         }
@@ -180,6 +180,16 @@ namespace GymManagementBLL.Services.Classes
                 return false;
 
             return true;
+        }
+
+        IEnumerable<SessionViewModel> ISessionService.GetAllSessions()
+        {
+            throw new NotImplementedException();
+        }
+
+        SessionViewModel? ISessionService.GetSessionById(int sessionId)
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }
