@@ -1,5 +1,5 @@
 ﻿using GymManagementBLL.ViewModels.SessionViewModels;
-using GymManagementBLL.ViewModels.SesssionViewModels;
+using GymManagementSystemBLL.ViewModels.SessionViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
