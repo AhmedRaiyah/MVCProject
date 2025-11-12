@@ -1,20 +1,14 @@
-﻿using GymManagementBLL.ViewModels.MemberViewModels;
-using GymManagementBLL.ViewModels.TrainerViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GymManagementBLL.ViewModels.TrainerViewModels;
 
 namespace GymManagementBLL.Services.Interfaces
 {
-    public interface ITrainerService
-    {
-        bool CreateTrainer(CreateTrainerViewModel model);
-        bool UpdateTrainerDetails(int memberId, TrainerToUpdateViewModel model);
-        bool RemoveTrainer(int trainerId);
-        IEnumerable<TrainerViewModel> GetAllTrainers();
-        TrainerViewModel? GetTrainerDetails(int trainerId);
-        TrainerToUpdateViewModel? GetTrainerToUpdate(int trainerId);
-    }
+	public interface ITrainerService
+	{
+		bool CreateTrainer(CreateTrainerViewModel createTrainer);
+		bool UpdateTrainerDetails(TrainerToUpdateViewModel updatedTrainer, int trainerId);
+		bool RemoveTrainer(int trainerId);
+		TrainerViewModel? GetTrainerDetails(int trainerId);
+		TrainerToUpdateViewModel? GetTrainerToUpdate(int trainerId);
+		IEnumerable<TrainerViewModel> GetAllTrainers();
+	}
 }

@@ -1,23 +1,21 @@
-using System.Diagnostics;
-using GymManagementBLL.Services.Interfaces;
-using GymManagementPL.Models;
+﻿using GymManagementBLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GymManagementPL.Controllers
 {
-    public class HomeController : Controller
-    {
-        private readonly IAnalyticalService _analyticalService;
+	[Authorize]
+	public class HomeController : Controller
+	{
+		private readonly IAnalyticsService _analyticsService;
 
-        public HomeController(IAnalyticalService analyticalService)
-        {
-            _analyticalService = analyticalService;
-        }
-        public IActionResult Index()
-        {
-            var analytics = _analyticalService.GetAnalyticsData();
-            
-            return View(analytics);
-        }
-    }
+		public HomeController(IAnalyticsService analyticsService)
+		{
+			_analyticsService = analyticsService;
+		}
+		public IActionResult Index()
+		{
+			return View(_analyticsService.GetAnalyticsData());
+		}
+	}
 }

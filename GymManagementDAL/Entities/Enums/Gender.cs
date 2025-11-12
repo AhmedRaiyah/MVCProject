@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace GymManagementDAL.Entities.Enums
 {
-    public enum Gender
-    {
-        Male = 1,
-        Femaile = 2
-    }
+	public enum Gender
+	{
+		Male = 1,
+		Female =2
+	}
 }

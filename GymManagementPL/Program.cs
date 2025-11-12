@@ -1,10 +1,14 @@
 using GymManagementBLL;
+using GymManagementBLL.Services.AttachmentService;
 using GymManagementBLL.Services.Classes;
 using GymManagementBLL.Services.Interfaces;
 using GymManagementDAL.Data.Contexts;
 using GymManagementDAL.Data.DataSeed;
+using GymManagementDAL.Entities;
 using GymManagementDAL.Repositories.Classes;
 using GymManagementDAL.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementPL
@@ -18,50 +22,80 @@ namespace GymManagementPL
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddDbContext<GymDBContext>(options =>
+            builder.Services.AddDbContext<GymDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
             builder.Services.AddScoped<ISessionRepository, SessionRepository>();
-            builder.Services.AddScoped<IAnalyticalService, AnalyticalService>();
             builder.Services.AddScoped<IMemberService, MemberService>();
+            builder.Services.AddScoped<ITrainerService, TrainerService>();
             builder.Services.AddScoped<IPlanService, PlanService>();
             builder.Services.AddScoped<ISessionService, SessionService>();
-            builder.Services.AddScoped<ITrainerService, TrainerService>();
+            builder.Services.AddScoped<IMembershipService, MembershipService>();
+            builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+            builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(Config =>
+            {
+                Config.Password.RequiredLength = 6;
+                Config.Password.RequireLowercase = true;
+            }).AddEntityFrameworkStores<GymDbContext>();
 
-            builder.Services.AddAutoMapper(x => x.AddProfile(new MappingProfile()));
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                // redirect unauthenticated users (401)
+                options.LoginPath = "/Account/Login";
+                // redirect forbidden users (403)
+                options.AccessDeniedPath = "/Account/AccessDenied";
+            });// Default Paths
 
+            builder.Services.AddScoped<IAccountService, AccountService>();
+            //builder.Services.AddIdentityCore<ApplicationUser>()
+            //				.AddEntityFrameworkStores<GymDbContext>();
+
+            builder.Services.AddAutoMapper(M => M.AddProfile(new MappingProfile()));
             var app = builder.Build();
 
-            #region Data Seeding
-            using var scope = app.Services.CreateScope();
+            #region Migrate Database -  Data Seeding
+            using var Scope = app.Services.CreateScope();
+            var dbContextObj = Scope.ServiceProvider.GetRequiredService<GymDbContext>();
+            var roleManager = Scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = Scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            var gymDbContext = scope.ServiceProvider.GetRequiredService<GymDBContext>();
-
-            GymDataSeeding.SeedData(gymDbContext);
+            var PendingMigrations = dbContextObj.Database.GetPendingMigrations();
+            if (PendingMigrations?.Any() ?? false)
+                dbContextObj.Database.Migrate();
+            GymDataSeeding.SeedData(dbContextObj);
+            IdentityDataSeeding.SeedData(roleManager, userManager);
             #endregion
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".jpeg"] = "image/jpeg";
+            provider.Mappings[".jpg"] = "image/jpeg";
+            provider.Mappings[".png"] = "image/png";
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = provider
+            });
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
-                .WithStaticAssets();
-
+                pattern: "{controller=Account}/{action=Login}/{id?}");
             app.Run();
         }
     }

@@ -1,43 +1,41 @@
 ﻿using GymManagementDAL.Data.Contexts;
 using GymManagementDAL.Entities;
 using GymManagementDAL.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace GymManagementDAL.Repositories.Classes
 {
-    public class UnitOfWork : IUnitOfWork
-    {
-        private readonly GymDBContext _context;
-        private readonly Dictionary<string, object> repositories = [];
-        
-        public ISessionRepository SessionRepository {  get ;  set ;  }
+	public class UnitOfWork : IUnitOfWork
+	{
+		public IMembershipRepository MembershipRepository { get; }
+		public ISessionRepository SessionRepository { get; }
 
-        public UnitOfWork(GymDBContext context, ISessionRepository sessionRepository)
-        {
-            _context = context;
-            SessionRepository = sessionRepository;
-        }
+		public IBookingRepository BookingRepository { get; }
+
+		private readonly Dictionary<string, object> repositories = [];
+		private readonly GymDbContext _dbContext;
+		public UnitOfWork(GymDbContext dbContext,
+			IMembershipRepository membershipRepository,
+			ISessionRepository sessionRepository,
+			IBookingRepository bookingRepository)
+		{
+			_dbContext = dbContext;
+			MembershipRepository = membershipRepository;
+			SessionRepository = sessionRepository;
+			BookingRepository = bookingRepository;
+		}
 
 
-        public IGenericRepository<TEntity> GetRepository<TEntity>() where TEntity : BaseEntity
-        {
-            var entityName = typeof(TEntity).Name;
+		public IGenericRepository<TEntity> GetRepository<TEntity>() where TEntity : BaseEntity
+		{
+			var typeName = typeof(TEntity).Name;
+			if (repositories.TryGetValue(typeName, out object? value))
+				return (IGenericRepository<TEntity>)value;
+			var Repo = new GenericRepository<TEntity>(_dbContext);
+			repositories[typeName] = Repo;
+			return Repo;
+		}
 
-            if (repositories.TryGetValue(entityName, out object? value))
-                return (IGenericRepository<TEntity>)value;
-
-            var repositiry = new GenericRepository<TEntity>(_context);
-
-            repositories.Add(entityName, repositiry);
-
-            return repositiry;
-        }
-
-        public int SaveChanges() => _context.SaveChanges();
-    }
+		public int SaveChanges()
+		=> _dbContext.SaveChanges();
+	}
 }

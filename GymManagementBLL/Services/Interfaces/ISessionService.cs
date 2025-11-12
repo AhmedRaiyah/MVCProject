@@ -1,20 +1,16 @@
 ﻿using GymManagementBLL.ViewModels.SessionViewModels;
-using GymManagementSystemBLL.ViewModels.SessionViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GymManagementBLL.Services.Interfaces
 {
-    public interface ISessionService
-    {
-        IEnumerable<SessionViewModel> GetAllSessions();
-        SessionViewModel? GetSessionById(int sessionId);
-        bool CreateSession(CreateSessionViewModel input);
-        bool UpdateSession(int sessionId, UpdateSessionViewModel input);
-        bool RemoveSession(int sessionId);
-        UpdateSessionViewModel? GetSessionToUpdate(int sessionId);
-    }
+	public interface ISessionService
+	{
+		IEnumerable<SessionViewModel> GetAllSessions();
+		SessionViewModel? GetSessionById(int sessionId);
+		UpdateSessionViewModel? GetSessionToUpdate(int sessionId);
+		bool CreateSession(CreateSessionViewModel createSession);
+		bool UpdateSession(int id, UpdateSessionViewModel updateSession);
+		bool RemoveSession(int sessionId);
+		IEnumerable<TrainerSelectViewModel> GetTrainersForDropDown();
+		IEnumerable<CategorySelectViewModel> GetCategoriesForDropDown();
+	}
 }

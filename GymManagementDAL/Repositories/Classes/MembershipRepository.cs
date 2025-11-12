@@ -1,46 +1,22 @@
 ﻿using GymManagementDAL.Data.Contexts;
 using GymManagementDAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GymManagementDAL.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementDAL.Repositories.Classes
 {
-    public class MembershipRepository
-    {
-        private readonly GymDBContext _context;
+	public class MembershipRepository : GenericRepository<MembershipEntity>, IMembershipRepository
+	{
+		private readonly GymDbContext _dbContext;
 
-        public MembershipRepository(GymDBContext context)
-        {
-            _context = context;
-        }
-        public int Add(Membership membership)
-        {
-            _context.Add(membership);
-            return _context.SaveChanges();
-        }
+		public MembershipRepository(GymDbContext dbContext) : base(dbContext)
+		{
+			_dbContext = dbContext;
+		}
 
-        public int Delete(int id)
-        {
-            var membership = GetById(id);
-
-            if (membership is null)
-                return 0;
-
-            _context.Remove(membership);
-            return _context.SaveChanges();
-        }
-
-        public IEnumerable<Membership> GetAll() => _context.Memberships.ToList();
-
-        public Membership? GetById(int id) => _context.Memberships.Find(id);
-
-        public int Update(Membership membership)
-        {
-            _context.Update(membership);
-            return _context.SaveChanges();
-        }
-    }
+		public IEnumerable<MembershipEntity> GetAllMembershipsWithMemberAndPlan(Func<MembershipEntity, bool> predicate)
+		{
+			return _dbContext.Memberships.Include(X => X.Plan).Include(X => X.Member).Where(predicate).ToList();
+		}
+	}
 }

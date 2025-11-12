@@ -1,36 +1,48 @@
 ﻿using GymManagementDAL.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace GymManagementDAL.Data.Contexts
 {
-    public class GymDBContext : DbContext
-    {
-        public GymDBContext(DbContextOptions<GymDBContext> options) : base(options)
-        {
+	public class GymDbContext : IdentityDbContext<ApplicationUser>
+	{
+		public GymDbContext(DbContextOptions<GymDbContext> dbContextOptions) : base(dbContextOptions)
+		{
 
-        }
+		}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-        }
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			base.OnModelCreating(modelBuilder);
+			modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        #region DBSets
-        public DbSet<Trainer> Trainers { get; set; }
-        public DbSet<Member> Members { get; set; }   
-        public DbSet<Session> Sessions{ get; set; }   
-        public DbSet<Category> Categories { get; set; }   
-        public DbSet<Booking> Bookings{ get; set; }   
-        public DbSet<Membership> Memberships { get; set; }   
-        public DbSet<HealthRecord> HealthRecords { get; set; }   
-        public DbSet<Plan> Plans { get; set; }   
-        #endregion
-    }
+			modelBuilder.Entity<ApplicationUser>(EB =>
+			{
+				EB.Property(X => X.FirstName)
+				.HasColumnType("varchar")
+				.HasMaxLength(50);
+
+				EB.Property(X => X.LastName)
+				.HasColumnType("varchar")
+				.HasMaxLength(50);
+			});
+		}
+
+		#region DbSets
+		public DbSet<TrainerEntity> Trainers { get; set; }
+		public DbSet<BookingEntity> Bookings { get; set; }
+		public DbSet<CategoryEntity> Categories { get; set; }
+		public DbSet<HealthRecordEntity> HealthRecords { get; set; }
+		public DbSet<MemberEntity> Members { get; set; }
+		public DbSet<MembershipEntity> Memberships { get; set; }
+		public DbSet<PlanEntity> Plans { get; set; }
+		public DbSet<SessionEntity> Sessions { get; set; }
+
+		#endregion
+
+
+
+	}
 }

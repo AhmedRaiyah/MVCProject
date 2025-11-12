@@ -1,64 +1,57 @@
 ﻿using GymManagementDAL.Data.Contexts;
 using GymManagementDAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace GymManagementDAL.Data.DataSeed
 {
-    public static class GymDataSeeding
-    {
-        public static bool SeedData(GymDBContext context)
-        {
+	public static class GymDataSeeding
+	{
+		public static bool SeedData(GymDbContext dbContext)
+		{
 			try
 			{
-				if (!context.Categories.Any())
-				{
-					var categories = LoadDataFromJsonFile<Category>("categories.json");
+				bool HasCategories = dbContext.Categories.Any();
+				bool HasPlans = dbContext.Plans.Any();
+				if (HasCategories && HasPlans) return false;
 
-					context.Categories.AddRange(categories);
-					
+				if (!HasCategories)
+				{
+					var Categories = LoadDataFromJsonFile<CategoryEntity>("categories.json");
+					dbContext.Categories.AddRange(Categories);
 				}
 
-                if (!context.Plans.Any())
-                {
-                    var plans = LoadDataFromJsonFile<Plan>("plans.json");
+				if (!HasPlans)
+				{
+					var Plans = LoadDataFromJsonFile<PlanEntity>("plans.json");
+					dbContext.Plans.AddRange(Plans);
+				}
 
-                    context.Plans.AddRange(plans);
-                }
-
-				return context.SaveChanges() > 0;
-
-            }
-            catch (Exception)
+				int RowsAffected = dbContext.SaveChanges();
+				return RowsAffected > 0;
+			}
+			catch (Exception ex)
 			{
-
+				Console.WriteLine($"Seeding Failed : {ex}");
 				return false;
 			}
-        }
+		}
 
 		private static List<T> LoadDataFromJsonFile<T>(string fileName)
 		{
 			var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", fileName);
 
-			if (!File.Exists(filePath))
-				throw new FileNotFoundException();
+			if (!File.Exists(filePath)) throw new FileNotFoundException();
 
-			var jsonData = File.ReadAllText(filePath);
-
-			var options = new JsonSerializerOptions
+			string Data = File.ReadAllText(filePath);
+			var Options = new JsonSerializerOptions()
 			{
 				PropertyNameCaseInsensitive = true
 			};
 
-			options.Converters.Add(new JsonStringEnumConverter());
+			Options.Converters.Add(new JsonStringEnumConverter());
+			return JsonSerializer.Deserialize<List<T>>(Data, Options) ?? new List<T>();
 
-			return JsonSerializer.Deserialize<List<T>>(jsonData, options);
 		}
-    }
+	}
 }
